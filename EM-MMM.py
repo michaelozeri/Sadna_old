@@ -22,8 +22,8 @@ signatures_data = np.load("data/BRCA-signatures.npy")
 
 mmm = MMM(signatures_data,initial_pi,input_x)
 
-# set lengths
-n = mmm.getN()
-m = mmm.getM()
+
+mmm.fit(input_x,0.01,200)
+
 
 
