@@ -31,8 +31,8 @@ class MMM:
         self.e_step()
         self.m_step(UPDATE_SIGNATURES_DATA)
         new_convergence = self.likelihood(input_x_data)
-        while abs(new_convergence - old_convergence) > threshold:
-            # print("delta is: " + (new_convergence - old_convergence).__str__())
+        while (abs(new_convergence - old_convergence) > threshold) and (number_of_iterations < max_iterations):
+            print("delta is: " + abs(new_convergence - old_convergence).__str__())
             old_convergence = new_convergence
             self.e_step()
             print(self.log_initial_pi)
@@ -40,7 +40,7 @@ class MMM:
             print(self.log_initial_pi)
             new_convergence = self.likelihood(input_x_data)
             number_of_iterations += 1
-            # print("number of iterations is: " + number_of_iterations.__str__())
+            print("number of iterations is: " + number_of_iterations.__str__())
         return
 
     def e_step(self):
@@ -52,9 +52,10 @@ class MMM:
                     temp_log_sum_array[k] = self.log_initial_pi[k] + self.log_signatures_data[k][j]
                 self.E[i][j] = (log(self.B[j]) + self.log_initial_pi[i] + self.log_signatures_data[i][j] - logsumexp(
                     temp_log_sum_array))
-        # TODO: verify this - because each Eij is now log(Eij)
+        # this is from the mail with itai to calculate log(Ai)
         for i in range(self.n):
-            self.A[i] = sum(self.E, axis=0)[i]
+            self.A[i] = logsumexp(self.E,axis=0)[i]
+            # self.A[i] = sum(self.E, axis=0)[i]
 
     # checks convergence from formula
     # on input on input data (sequence or sequences), return log probability to see it
