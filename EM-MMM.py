@@ -2,6 +2,7 @@ import json
 import numpy as np
 from MMM import MMM
 
+
 # read example data from JSON
 with open('data/example.json') as f:
     data = json.load(f)
@@ -22,4 +23,9 @@ mmm = MMM(signatures_data, initial_pi, input_x)
 
 mmm.fit(input_x, 0.01, 200)
 
-print(mmm.likelihood(dic_data))
+for i in range(mmm.n):
+    print(mmm.log_to_regular(mmm.log_initial_pi[i])-trained_pi[i]);
+
+print("shit")
+
+# print(mmm.likelihood(dic_data))
