@@ -6,39 +6,18 @@ from scipy.special import logsumexp
 UPDATE_SIGNATURES_DATA = False
 
 
-def create_b_array(input_x, m):
-    length = len(input_x)
-    b = [0 for i in range(m)]
-    for i in range(length):
-        b[input_x[i] - 1] += 1
-    return b
-
-
-def convert_to_log_scale(initial_pi):
-    # find dimension of array to convert
-    s = shape(initial_pi)
-    if len(s) == 2:
-        return [[log(xij) for xij in xi] for xi in initial_pi]
-    else:
-        return [log(xi) for xi in initial_pi]
-
-
-def log_to_regular(param):
-    return exp(param)
-
-
 class MMM:
     def __init__(self, signatures_data, initial_pi, input_x):
 
         # defining the mmm
-        self.log_signatures_data = convert_to_log_scale(signatures_data)
-        self.log_initial_pi = convert_to_log_scale(initial_pi)
+        self.log_signatures_data = self.convert_to_log_scale(signatures_data)
+        self.log_initial_pi = self.convert_to_log_scale(initial_pi)
 
         # constants - don't change
         self.n = len(self.log_signatures_data)
         self.m = len(self.log_signatures_data[0])
         self.T = len(input_x)
-        self.B = create_b_array(input_x, self.m)
+        self.B = self.create_b_array(input_x, self.m)
 
         # are calculated each iteration
         self.E = [[0 for j in range(self.m)] for i in range(self.n)]
@@ -47,29 +26,33 @@ class MMM:
     # on input data (sequence or sequences) do EM iterations until the model improvement is less
     # than  threshold , or until max_iterations iterations.
     def fit(self, input_x_data, threshold, max_iterations):
+        number_of_iterations = 1
         old_convergence = self.likelihood(input_x_data)
         self.e_step()
         self.m_step(UPDATE_SIGNATURES_DATA)
         new_convergence = self.likelihood(input_x_data)
-        while (new_convergence - old_convergence) > threshold:
+        while abs(new_convergence - old_convergence) > threshold:
+            # print("delta is: " + (new_convergence - old_convergence).__str__())
             old_convergence = new_convergence
             self.e_step()
+            print(self.log_initial_pi)
             self.m_step(UPDATE_SIGNATURES_DATA)
+            print(self.log_initial_pi)
             new_convergence = self.likelihood(input_x_data)
+            number_of_iterations += 1
+            # print("number of iterations is: " + number_of_iterations.__str__())
         return
 
     def e_step(self):
+        # this is the correct calc for the Eij by the PDF
         for i in range(self.n):
             for j in range(self.m):
-                b_j_ = self.B[j]
-                pi_i_ = log_to_regular(self.log_initial_pi[i])
-                e_ij = log_to_regular(self.log_signatures_data[i][j])
-                temp = 0
-                for k in range(0, self.n):
-                    temp += (log_to_regular(self.log_initial_pi[k]) * log_to_regular(self.log_signatures_data[k][j]))
-
-                self.E[i][j] = b_j_ * ((pi_i_ * e_ij) / temp)
-
+                temp_log_sum_array = [0 for i in range(self.n)]
+                for k in range(self.n):
+                    temp_log_sum_array[k] = self.log_initial_pi[k] + self.log_signatures_data[k][j]
+                self.E[i][j] = (log(self.B[j]) + self.log_initial_pi[i] + self.log_signatures_data[i][j] - logsumexp(
+                    temp_log_sum_array))
+        # TODO: verify this - because each Eij is now log(Eij)
         for i in range(self.n):
             self.A[i] = sum(self.E, axis=0)[i]
 
@@ -88,7 +71,28 @@ class MMM:
         for i in range(self.n):
             if update_e_ij:
                 for j in range(self.m):
-                    # numerically stable for pi
-                    self.log_signatures_data[i][j] = log(self.E[i][j]) - log(sum(self.E, axis=1)[j])
+                    # numerically stable for pi - Eij is already log(Eij)
+                    self.log_signatures_data[i][j] = self.E[i][j] - log(sum(self.log_to_regular(self.E), axis=1)[j])
             # numerically stable for pi
-            self.log_initial_pi[i] = log(self.A[i]) - log(self.T)
+            self.log_initial_pi[i] = self.A[i] - log(self.T)
+
+    @staticmethod
+    def convert_to_log_scale(initial_pi):
+        # find dimension of array to convert
+        s = shape(initial_pi)
+        if len(s) == 2:
+            return [[log(xij) for xij in xi] for xi in initial_pi]
+        else:
+            return [log(xi) for xi in initial_pi]
+
+    @staticmethod
+    def create_b_array(input_x, m):
+        length = len(input_x)
+        b = [0 for i in range(m)]
+        for i in range(length):
+            b[input_x[i] - 1] += 1
+        return b
+
+    @staticmethod
+    def log_to_regular(param):
+        return exp(param)
