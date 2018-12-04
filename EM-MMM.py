@@ -18,15 +18,9 @@ with open('data/ICGC-BRCA.json') as f1:
 # this is an array of 12x96 - [i,j] is e_ij - fixed in this case until we change
 signatures_data = np.load("data/BRCA-signatures.npy")
 
-# for i in range(len(signatures_data)):
-#     for j in range(len(signatures_data[0])):
-#         if signatures_data[i][j] == 0:
-#             print("changed signatures_data at location : (" + i.__str__() + " ," + j.__str__() + ")")
-#             signatures_data[i][j] = 0.1
-
 mmm = MMM(signatures_data, initial_pi, input_x)
 
-mmm.fit(input_x, 0.01, 200)
+mmm.fit(input_x, 0.000001, 400)
 
 err = 0
 for i in range(mmm.n):
