@@ -33,15 +33,15 @@ class MMM:
         self.m_step(UPDATE_SIGNATURES_DATA)
         new_score = self.likelihood(input_x_data)
         while (abs(new_score - old_score) > threshold) and (number_of_iterations < max_iterations):
-            print("delta is: " + abs(new_score - old_score).__str__())
+            # print("delta is: " + abs(new_score - old_score).__str__())
             old_score = new_score
             self.e_step()
             # print(self.log_initial_pi)
             self.m_step(UPDATE_SIGNATURES_DATA)
-            print(self.log_initial_pi)
-            # new_score = self.likelihood(input_x_data)
+            # print(self.log_initial_pi)
+            new_score = self.likelihood(input_x_data)
             number_of_iterations += 1
-            print("number of iterations is: " + number_of_iterations.__str__())
+            # print("number of iterations is: " + number_of_iterations.__str__())
         return
 
     def e_step(self):
