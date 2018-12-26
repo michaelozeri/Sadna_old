@@ -20,7 +20,7 @@ signatures_data = np.load("data/BRCA-signatures.npy")
 
 mmm = MMM(signatures_data, initial_pi, input_x)
 
-mmm.fit(input_x, 0.00000001, 1000)
+mmm.fit(input_x, 0.001, 1000)
 
 err = 0
 for i in range(mmm.n):
