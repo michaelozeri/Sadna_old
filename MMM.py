@@ -54,8 +54,9 @@ class MMM:
                 self.E[i][j] = (log(self.B[j]) + self.log_initial_pi[i] + self.log_signatures_data[i][j] - logsumexp(
                     temp_log_sum_array))
         # this is from the mail with itay to calculate log(Ai)
+        tmp = logsumexp(self.E, axis=1)
         for i in range(self.n):
-            self.A[i] = logsumexp(self.E, axis=1)[i]
+            self.A[i] = tmp[i]
 
     # checks convergence from formula
     # on input on input data (sequence or sequences), return log probability to see it
@@ -76,6 +77,12 @@ class MMM:
                     self.log_signatures_data[i][j] = self.E[i][j] - log(sum(self.log_to_regular(self.E), axis=1)[j])
             # numerically stable for pi
             self.log_initial_pi[i] = self.A[i] - log(self.T)
+
+    def set_t(self, t):
+        self.T = t
+
+    def set_b(self, input_x):
+        self.B = self.create_b_array(input_x,self.m)
 
     @staticmethod
     def convert_to_log_scale(initial_pi):
