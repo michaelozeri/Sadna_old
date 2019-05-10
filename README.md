@@ -1,4 +1,3 @@
-# Sadna1
-הקוד של הפרוייקט הראשון בסדנה לניתוח רשתות ביולוגיות
-
-כשיתחיל להגיע משהו רלוונטי נכתוב פה הערות אחד לשני
+# Sadna_old
+This is a test code to start impl on the workshop of analysis on biological networks
+nothing special - just a very primal implementation
